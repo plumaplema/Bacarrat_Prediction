@@ -9,41 +9,26 @@ import {
   Flex,
   Text,
   useToast,
+  HStack,
+  Center,
 } from "@chakra-ui/react";
 import { useBoard } from "../storage/boardstorage";
 import { CircleProps } from "../interface";
 import Circle from "./Circle";
+import Row from "./Row";
 
 function Main() {
   const toast = useToast();
-  const { currentBoard } = useBoard();
+  const { currentBoard, historyBoard } = useBoard();
   const [totalGeneration, settotalGeneration] = useState(0);
   const [textAreaValue, setTextAreaValue] = useState("");
   const [prediction, setPrediction] = useState([0, 0, 0]);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const handleInputChange = (event) => {
-    const newValue = event.target.value.replace(/[^bpt]/gi, "").toUpperCase();
-    const spacedValue = newValue.split("").join(" ");
-    setTextAreaValue(spacedValue);
-  };
-
-  const converttextAreaValueToArray = () => {
-    const array = textAreaValue.split(" ");
-    const convertedArray = array.map((item) => {
-      if (item === "B") {
-        return 1;
-      } else if (item === "P") {
-        return 0;
-      } else if (item === "T") {
-        return 2;
-      }
-    });
-    return convertedArray;
-  };
 
   const handleClick = () => {
-    if (textAreaValue.length == 0) {
+    console.log(historyBoard);
+    if (historyBoard.length == 0) {
       toast({
         title: "No previous results",
         description: "Please type in the previous results",
@@ -88,13 +73,12 @@ function Main() {
 
   useEffect(() => {
     if (!isLoading && totalGeneration > 0) {
-      const convertedArray = converttextAreaValueToArray();
       fetch("/api/generatePrediction", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ dataHistory: convertedArray }),
+        body: JSON.stringify({ dataHistory: historyBoard }),
       })
         .then((response) => response.json())
         .then((data) => {
@@ -146,7 +130,10 @@ function Main() {
       >
         {currentBoard}
       </Box>
-      <Textarea
+      <HStack>
+        <Row />
+      </HStack>
+      {/* <Textarea
         value={textAreaValue}
         placeholder="Type here the previous results"
         size="lg"
@@ -166,7 +153,7 @@ function Main() {
           boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.6)",
         }}
         transition="all 0.2s"
-      />
+      /> */}
       <Button
         isDisabled={isLoading}
         colorScheme="teal"
