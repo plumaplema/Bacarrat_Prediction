@@ -59,7 +59,7 @@ function Main() {
     let progress = 0;
     settotalGeneration(totalGeneration + 1);
     const interval = setInterval(() => {
-      progress += 18;
+      progress += 40;
       setProgress(progress);
       if (progress >= 100) {
         clearInterval(interval);
