@@ -28,6 +28,20 @@ function Main() {
     setTextAreaValue(spacedValue);
   };
 
+  const converttextAreaValueToArray = () => {
+    const array = textAreaValue.split(" ");
+    const convertedArray = array.map((item) => {
+      if (item === "B") {
+        return 1;
+      } else if (item === "P") {
+        return 0;
+      } else if (item === "T") {
+        return 2;
+      }
+    });
+    return convertedArray;
+  };
+
   const handleClick = () => {
     if (textAreaValue.length == 0) {
       toast({
@@ -39,6 +53,8 @@ function Main() {
       });
       return;
     }
+
+    //post the data to the API
     setIsLoading(true);
     let progress = 0;
     settotalGeneration(totalGeneration + 1);
@@ -72,25 +88,38 @@ function Main() {
 
   useEffect(() => {
     if (!isLoading && totalGeneration > 0) {
-      const percentages = generateRandomPercentages();
-      setPrediction(percentages);
+      const convertedArray = converttextAreaValueToArray();
+      fetch("/api/generatePrediction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ dataHistory: convertedArray }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setPrediction([data["1"], data["0"], data["2"]]);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     }
   }, [isLoading]);
 
   const CircleData: Array<CircleProps> = [
     {
       borderColor: "red.500",
-      percentage: `${prediction[0].toFixed(2)}%`,
+      percentage: `${prediction[0]}`,
       label: "BANKER",
     },
     {
       borderColor: "green.500",
-      percentage: `${prediction[1].toFixed(2)}%`,
+      percentage: `${prediction[1]}`,
       label: "PLAYER",
     },
     {
       borderColor: "gray.500",
-      percentage: `${prediction[2].toFixed(2)}%`,
+      percentage: `${prediction[2]}`,
       label: "TIE",
     },
   ];
